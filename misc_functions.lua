@@ -30,7 +30,22 @@ local function get_world_data()
 	if buffer then
 		wdata = core.parse_json(buffer:read("*a"))
 		buffer:close()
+
+		if not wdata then	-- data file is corrupted. back it up and continue with blank wdata
+			wdata = {}
+			local p = core.get_worldpath() .. "/cleaner"
+			for x = 1,99 do
+				local sname = p .. ".bak" .. x .. ".json"
+				local result = io.open(sname, "r")
+				if result then
+					sname:close()
+				else
+					if os.rename(world_file, sname) then break end
+				end
+			end
+		end
 	end
+
 
 	local rem_types = {"entities", "nodes", "ores",}
 	local rep_types = {"items", "nodes",}
